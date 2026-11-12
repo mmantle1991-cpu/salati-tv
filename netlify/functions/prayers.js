@@ -38,14 +38,28 @@ function parsePrayerTimes(html) {
     all.push(hh * 60 + mm);
   }
 
-  // Fajr, Dhuhr, Asr, Maghrib, Isha
+ 
+  // Convert afternoon prayer times to 24-hour format.
+  // Source order: Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha.
+
+  function afternoon(minutes) {
+    const hour = Math.floor(minutes / 60);
+
+    // 12:xx remains 12:xx.
+    // 1:xx through 11:xx becomes 13:xx through 23:xx.
+    return hour >= 1 && hour <= 11
+      ? minutes + 12 * 60
+      : minutes;
+  }
+
   const times = [
-    all[0],
-    all[2],
-    all[3],
-    all[4],
-    all[5]
+    all[0],             // Fajr
+    all[2],             // Dhuhr
+    afternoon(all[3]),  // Asr
+    afternoon(all[4]),  // Maghrib
+    afternoon(all[5])   // Isha
   ];
+
 
   if (times.some((n, i) => i > 0 && n <= times[i - 1])) {
     throw Error("Unexpected prayer time order");
